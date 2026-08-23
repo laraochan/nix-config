@@ -43,6 +43,7 @@
       "spotify"
       "1password"
       "nani"
+      "obsidian"
     ];
     onActivation = {
       autoUpdate = false;
@@ -58,6 +59,7 @@
       persistent-apps = [
         { app = "/Applications/Google Chrome.app"; }
         { app = "/Applications/Ghostty.app"; }
+        { app = "/Applications/Obsidian.app"; }
         { app = "/Applications/Discord.app"; }
         { app = "/Applications/Spotify.app"; }
         { app = "/Applications/1Password.app"; }

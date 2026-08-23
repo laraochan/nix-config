@@ -11,6 +11,7 @@
     ./programs/git.nix
     ./programs/lazygit.nix
     ./programs/neovim.nix
+    ./programs/obsidian.nix
     ./programs/yazi.nix
     ./programs/zsh.nix
   ];

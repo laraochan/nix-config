@@ -16,6 +16,11 @@
 
     nix-homebrew.url = "github:zhaofengli/nix-homebrew";
 
+    obsidian-extensions = {
+      url = "github:karaolidis/nix-obsidian-extensions";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     homebrew-core = {
       url = "github:homebrew/homebrew-core";
       flake = false;
