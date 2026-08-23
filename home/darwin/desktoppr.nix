@@ -1,4 +1,4 @@
-{ lib, pkgs, ... }:
+{ ... }:
 let
   wallpaper = builtins.path {
     path = ../../assets/wallpaper.png;
@@ -6,7 +6,7 @@ let
   };
 in
 {
-  programs.desktoppr = lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
+  programs.desktoppr = {
     enable = true;
     settings = {
       picture = wallpaper;

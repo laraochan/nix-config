@@ -2,12 +2,12 @@
   config,
   inputs,
   lib,
+  systemPlatform,
   username,
   ...
 }:
 {
   imports = [
-    ../common
     inputs.home-manager.darwinModules.home-manager
     inputs.nix-homebrew.darwinModules.nix-homebrew
   ];
@@ -15,7 +15,10 @@
   home-manager = {
     useGlobalPkgs = true;
     backupFileExtension = "hm-backup";
-    extraSpecialArgs = { inherit inputs username; };
+    extraSpecialArgs = {
+      inherit inputs username;
+      homePlatform = systemPlatform;
+    };
     users.${username} = import ../../home;
   };
 

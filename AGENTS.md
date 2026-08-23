@@ -10,10 +10,11 @@
 
 構成は次の方向に組み立てる。
 
-1. `flake.nix` が対象ホストを選び、`hosts/<os>/<hostname>` を読み込む。
-2. 各ホストが対応する `modules/darwin` または `modules/nixos` を読み込む。
-3. OS別moduleが `modules/common` とHome Managerを読み込む。
-4. Home Managerが `home` からユーザー設定を生成する。
+1. `flake.nix` が対象ホストを選び、対象OSを `systemPlatform` で渡す。
+2. `hosts/<os>/<hostname>` が `modules/default.nix` を読み込む。
+3. `modules/default.nix` が共有設定と対応する `modules/<os>` を読み込む。
+4. OS別moduleがHome Managerを統合し、`systemPlatform` を `homePlatform` として渡す。
+5. `home/default.nix` が共有設定と対応する `home/<os>` を読み込み、ユーザー設定を生成する。
 
 依存方向を逆にしない。共通moduleから特定ホストを参照したり、Home Managerから
 システムmoduleを読み込んだりしない。
@@ -36,7 +37,7 @@ hostnameの小文字表記と一致させる。
 - ブートローダー、ディスク、ファイルシステム、CPU、GPU
 - `hardware-configuration.nix`
 - その1台だけで必要なサービス、パッケージ、OS設定
-- 対応するOS共通moduleのimport
+- `modules/default.nix` のimport
 
 複数ホストで同じ設定が必要になった場合は、`hosts` に複製せず対応する
 `modules` へ移す。ユーザーのシェルやアプリ設定も置かない。
@@ -46,7 +47,7 @@ hostnameの小文字表記と一致させる。
 `modules` はOS構成が所有する共有設定を置く。サービス、ログインシェル、
 ユーザーアカウント、OS defaultsなど、ログイン前またはシステム全体で必要な設定を担当する。
 
-- `modules/common`: macOSとNixOSの全ホストで共有するNix設定、システム機能、フォント
+- `modules/default.nix`: 両OSで共有するNix設定、システム機能、フォントとOS別moduleの選択
 - `modules/darwin`: 全Macで共有するNixパッケージ、Homebrew、macOS defaults、
   nix-darwinへのHome Manager統合
 - `modules/nixos`: 全NixOSホストで共有するパッケージ、サービス、ユーザー、locale、
@@ -58,7 +59,15 @@ hostnameの小文字表記と一致させる。
 ### `home`
 
 `home` はlaraoユーザーとして生成する設定ファイルとユーザー環境を担当する。
-シェル、Git、エディタ、ターミナルなどの設定を置き、DarwinとNixOSで共有する。
+両OSで共有する設定を `home` 直下、macOS固有の設定を `home/darwin`、
+NixOS固有の設定を `home/nixos` に置く。`home/default.nix` は共有moduleと、
+`homePlatform` に対応するOS別moduleだけをimportする。
+共有する個別プログラムの設定は `home/<name>.nix`、OS固有なら対応するOSディレクトリに置く。
+共有するプログラムの設定内に、片方のOSだけで意味を持つ設定キーが含まれていても、
+そのプログラムが両OSで設定を受理できるなら、キー単位でOS別ファイルへ分割しない。
+設定量が多いプログラムだけ、プログラム名のディレクトリへ分割する。
+OS固有でも複数のプログラムやデスクトップ環境を横断する設定は、まず対応するOSの
+`default.nix` に置き、読みにくくなった場合だけ責務単位のファイルへ分割する。
 
 システムサービス、ユーザーアカウント、hardware設定は置かない。laraoだけが使う
 CLIとその設定はHome Managerが所有し、可能なら `programs.<name>` moduleで本体と設定を
@@ -74,7 +83,10 @@ CLIとその設定はHome Managerが所有し、可能なら `programs.<name>` m
 1. laraoだけが使うCLIやユーザー設定なら `home` に置く。
 2. システム設定で1台だけに適用するなら `hosts` に置く。
 3. 同じOSの全ホストで共有するなら `modules/darwin` または `modules/nixos` に置く。
-4. 両OSで共有するなら `modules/common` に置く。
+4. 両OSで共有するなら `modules/default.nix` に置く。
+
+`home` が所有すると決めた設定は、DarwinとNixOSで共有するなら `home` 直下、
+macOSだけなら `home/darwin`、NixOSだけなら `home/nixos` に置く。
 
 設定は、実際の適用対象が最も狭く正確になる場所へ置く。将来共有するかもしれない
 という理由だけで、ホスト固有の設定を先に共通化しない。
@@ -144,8 +156,8 @@ programs.starship = {
 
 この構成では `home-manager.useGlobalPkgs = true` のため、Home Managerから導入する非自由
 パッケージもOS構成のpredicateで許可する。ラッパーと内部成果物の両方が評価対象になる場合は、
-評価に必要な名前を過不足なく許可する。許可リストを `modules/common` に集約して、不要なOSまで
-許可範囲を広げない。
+評価に必要な名前を過不足なく許可する。許可リストを `modules/default.nix` に集約せず、
+不要なOSまで許可範囲を広げない。
 
 ### ファイルの分割
 
@@ -185,11 +197,13 @@ programs.ghostty = {
 };
 ```
 
-`home` はDarwinとNixOSで共有される。OS固有のアプリ設定は
-`lib.mkIf pkgs.stdenv.hostPlatform.isDarwin` や
-`lib.mkIf pkgs.stdenv.hostPlatform.isLinux` で対象OSを限定する。設定attrset全体には
-`lib.mkIf`、パッケージリストの要素には `lib.optionals` を使う。共通設定には不要な条件を
-付けず、対象OSでoptionやパッケージが存在しない場合、または生成物がOS固有の場合に限る。
+`flake.nix` は `specialArgs.systemPlatform` に `"darwin"` または `"nixos"` を渡す。
+`modules/default.nix` はこの値でOS別moduleを選び、OS別moduleは同じ値をHome Managerの
+`extraSpecialArgs.homePlatform` へ渡す。`home/default.nix` はこの値でOS別moduleを選ぶ。
+module引数の評価が循環するため、`imports` の条件に `pkgs` や `config` を使わない。
+OS固有のmodule、option、パッケージ、またはファイル全体が片方のOSにしか適用できない設定は
+対応するOSディレクトリに置く。共有プログラムの設定は個々のキー名だけを理由に分割せず、
+共有ファイル内で同じOS分岐も重ねない。
 
 デスクトップ環境では、機能を利用可能にするシステム基盤と、ユーザーが選ぶ状態を分離する。
 設定値がユーザー単位で保存され、ユーザー設定がシステム既定値より優先される仕組みでは、
@@ -247,6 +261,6 @@ nix build path:.#darwinConfigurations.\"laraos-MacBook-Pro\".system --dry-run
 Nixファイルを変更した場合は、フォーマッターと空白エラーも確認する。
 
 ```sh
-nix run path:.#formatter.aarch64-darwin -- .
+nix fmt
 git diff --check
 ```

@@ -1,11 +1,10 @@
 {
   inputs,
-  lib,
   pkgs,
   ...
 }:
 {
-  programs.obsidian = lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
+  programs.obsidian = {
     enable = true;
     package = null;
 

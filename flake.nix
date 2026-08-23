@@ -38,33 +38,38 @@
 
   outputs =
     inputs@{
-      self,
       nixpkgs,
       nix-darwin,
       ...
     }:
     let
       username = "larao";
-      specialArgs = { inherit inputs self username; };
+      specialArgsFor = systemPlatform: {
+        inherit
+          inputs
+          systemPlatform
+          username
+          ;
+      };
     in
     {
       # Add another Mac by copying a directory under hosts/darwin and adding
       # one darwinSystem entry here.
       darwinConfigurations."laraos-MacBook-Pro" = nix-darwin.lib.darwinSystem {
-        inherit specialArgs;
+        specialArgs = specialArgsFor "darwin";
         modules = [ ./hosts/darwin/laraos-macbook-pro ];
       };
 
       # This is an installable template. Replace its hardware configuration
       # and hostname when adding the first physical NixOS machine.
       nixosConfigurations.nixos-example = nixpkgs.lib.nixosSystem {
-        inherit specialArgs;
+        specialArgs = specialArgsFor "nixos";
         system = "x86_64-linux";
         modules = [ ./hosts/nixos/nixos-example ];
       };
 
       nixosConfigurations.thinkpad-e14-gen5 = nixpkgs.lib.nixosSystem {
-        inherit specialArgs;
+        specialArgs = specialArgsFor "nixos";
         system = "x86_64-linux";
         modules = [ ./hosts/nixos/thinkpad-e14-gen5 ];
       };
