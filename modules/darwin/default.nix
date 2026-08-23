@@ -15,7 +15,7 @@
     useGlobalPkgs = true;
     backupFileExtension = "hm-backup";
     extraSpecialArgs = { inherit inputs username; };
-    users.${username} = import ../../home/larao;
+    users.${username} = import ../../home;
   };
 
   nix-homebrew = {

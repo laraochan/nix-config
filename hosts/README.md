@@ -27,7 +27,7 @@ hosts/
 - そのマシンだけに必要なパッケージやmacOS defaults
 
 複数のマシンで共有したい設定は `hosts` ではなく `modules` に置きます。
-ユーザー個人のシェル、Git、dotfilesの設定は `home/larao` に置きます。
+ユーザー個人のシェル、Git、dotfilesの設定は `home` に置きます。
 パッケージの配置はルートの `AGENTS.md` に従います。
 
 ## Darwinホスト
@@ -75,7 +75,7 @@ nixos-generate-config --show-hardware-config
 | 全Mac共通 | `modules/darwin` |
 | 全NixOS共通 | `modules/nixos` |
 | 特定の1台だけ | `hosts/<os>/<hostname>` |
-| laraoのユーザー設定 | `home/larao` |
+| laraoのユーザー設定 | `home` |
 
 迷った場合は、まずホスト側に追加し、2台以上で同じ設定が必要になった時点で
 対応する `modules` へ移すと管理しやすくなります。

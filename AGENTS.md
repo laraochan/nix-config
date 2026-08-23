@@ -13,7 +13,7 @@
 1. `flake.nix` が対象ホストを選び、`hosts/<os>/<hostname>` を読み込む。
 2. 各ホストが対応する `modules/darwin` または `modules/nixos` を読み込む。
 3. OS別moduleが `modules/common` とHome Managerを読み込む。
-4. Home Managerが `home/larao` からユーザー設定を生成する。
+4. Home Managerが `home` からユーザー設定を生成する。
 
 依存方向を逆にしない。共通moduleから特定ホストを参照したり、Home Managerから
 システムmoduleを読み込んだりしない。
@@ -55,9 +55,9 @@ hostnameの小文字表記と一致させる。
 特定ホストのhardware設定やhostnameは置かない。ユーザー設定ファイルの内容も
 `modules` に直接記述せず、Home Managerへ委譲する。
 
-### `home/larao`
+### `home`
 
-`home/larao` はlaraoユーザーとして生成する設定ファイルとユーザー環境を担当する。
+`home` はlaraoユーザーとして生成する設定ファイルとユーザー環境を担当する。
 シェル、Git、エディタ、ターミナルなどの設定を置き、DarwinとNixOSで共有する。
 
 システムサービス、ユーザーアカウント、hardware設定は置かない。laraoだけが使う
@@ -66,7 +66,7 @@ CLIとその設定はHome Managerが所有し、可能なら `programs.<name>` m
 
 ### 配置を決める順序
 
-1. laraoだけが使うCLIやユーザー設定なら `home/larao` に置く。
+1. laraoだけが使うCLIやユーザー設定なら `home` に置く。
 2. システム設定で1台だけに適用するなら `hosts` に置く。
 3. 同じOSの全ホストで共有するなら `modules/darwin` または `modules/nixos` に置く。
 4. 両OSで共有するなら `modules/common` に置く。
@@ -82,10 +82,10 @@ Home Managerを設定生成だけに制限せず、ユーザー環境と不可�
 | 対象 | 配置場所 |
 | --- | --- |
 | サービス、ログイン、全ユーザーに必要 | `modules` または `hosts` のOS構成 |
-| laraoだけが使うCLI | `home/larao` のHome Manager構成 |
+| laraoだけが使うCLI | `home` のHome Manager構成 |
 | Mac用GUIアプリ | `modules/darwin` のHomebrew cask |
 | NixOS用GUIアプリ | `modules/nixos` または対象の `hosts` |
-| GUIアプリのユーザー設定 | `home/larao` |
+| GUIアプリのユーザー設定 | `home` |
 
 ### 所有者を決める基準
 
@@ -162,7 +162,7 @@ programs.ghostty = {
 };
 ```
 
-`home/larao` はDarwinとNixOSで共有される。OS固有のアプリ設定は
+`home` はDarwinとNixOSで共有される。OS固有のアプリ設定は
 `lib.mkIf pkgs.stdenv.hostPlatform.isDarwin` などで対象OSを限定する。
 
 Home Managerはシステム構成に統合されているため、個別に
