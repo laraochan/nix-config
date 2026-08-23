@@ -11,7 +11,9 @@ nix-darwinとNixOSの複数ホストを、共通モジュールとホスト固�
 ├── home/larao
 ├── hosts
 │   ├── darwin/laraos-macbook-pro
-│   └── nixos/nixos-example
+│   └── nixos
+│       ├── thinkpad-e14-gen5
+│       └── nixos-example
 └── modules
     ├── common
     ├── darwin
@@ -35,6 +37,8 @@ Home Managerもシステム再構築時に適用されるため、個別の
 `nixos-example` はx86_64 QEMU向けのテンプレートです。実機では対象マシンで
 生成した `hardware-configuration.nix` に置き換えてください。
 
+旧構成から移行した実機は `thinkpad-e14-gen5` として登録されています。
+
 ```sh
-sudo nixos-rebuild switch --flake .#<hostname>
+sudo nixos-rebuild switch --flake .#thinkpad-e14-gen5
 ```

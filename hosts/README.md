@@ -9,6 +9,9 @@ hosts/
 │   └── laraos-macbook-pro/
 │       └── default.nix
 └── nixos/
+    ├── thinkpad-e14-gen5/
+    │   ├── default.nix
+    │   └── hardware-configuration.nix
     └── nixos-example/
         ├── default.nix
         └── hardware-configuration.nix

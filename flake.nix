@@ -58,6 +58,12 @@
         modules = [ ./hosts/nixos/nixos-example ];
       };
 
+      nixosConfigurations.thinkpad-e14-gen5 = nixpkgs.lib.nixosSystem {
+        inherit specialArgs;
+        system = "x86_64-linux";
+        modules = [ ./hosts/nixos/thinkpad-e14-gen5 ];
+      };
+
       formatter = {
         aarch64-darwin = nixpkgs.legacyPackages.aarch64-darwin.nixfmt-tree;
         x86_64-linux = nixpkgs.legacyPackages.x86_64-linux.nixfmt-tree;

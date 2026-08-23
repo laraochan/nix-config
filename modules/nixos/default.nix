@@ -18,7 +18,100 @@
 
   networking.networkmanager.enable = true;
 
-  environment.systemPackages = with pkgs; [ ];
+  time.timeZone = "Asia/Tokyo";
+
+  i18n = {
+    defaultLocale = "en_US.UTF-8";
+    extraLocaleSettings = {
+      LC_ADDRESS = "ja_JP.UTF-8";
+      LC_IDENTIFICATION = "ja_JP.UTF-8";
+      LC_MEASUREMENT = "ja_JP.UTF-8";
+      LC_MONETARY = "ja_JP.UTF-8";
+      LC_NAME = "ja_JP.UTF-8";
+      LC_NUMERIC = "ja_JP.UTF-8";
+      LC_PAPER = "ja_JP.UTF-8";
+      LC_TELEPHONE = "ja_JP.UTF-8";
+      LC_TIME = "ja_JP.UTF-8";
+    };
+    inputMethod = {
+      enable = true;
+      type = "fcitx5";
+      fcitx5 = {
+        addons = with pkgs; [
+          fcitx5-gtk
+          fcitx5-mozc
+        ];
+        ignoreUserConfig = true;
+        settings.inputMethod = {
+          GroupOrder."0" = "Default";
+          "Groups/0" = {
+            Name = "Default";
+            "Default Layout" = "us";
+            DefaultIM = "keyboard-us";
+          };
+          "Groups/0/Items/0".Name = "keyboard-us";
+          "Groups/0/Items/1".Name = "mozc";
+        };
+      };
+    };
+  };
+
+  services = {
+    xserver = {
+      enable = true;
+      xkb = {
+        layout = "us";
+        variant = "";
+      };
+    };
+    displayManager.gdm.enable = true;
+    desktopManager.gnome.enable = true;
+    logind.settings.Login.HandleLidSwitch = "ignore";
+    printing.enable = true;
+    pulseaudio.enable = false;
+    pipewire = {
+      enable = true;
+      alsa.enable = true;
+      alsa.support32Bit = true;
+      pulse.enable = true;
+    };
+  };
+
+  security.rtkit.enable = true;
+
+  programs = {
+    dconf = {
+      enable = true;
+      profiles.user.databases = [
+        {
+          lockAll = true;
+          settings = {
+            "org/gnome/desktop/input-sources".xkb-options = [ "ctrl:nocaps" ];
+            "org/gnome/shell".enabled-extensions = [
+              pkgs.gnomeExtensions.kimpanel.extensionUuid
+            ];
+          };
+        }
+      ];
+    };
+    firefox.enable = true;
+  };
+
+  xdg.mime = {
+    enable = true;
+    defaultApplications = {
+      "text/html" = "firefox.desktop";
+      "x-scheme-handler/http" = "firefox.desktop";
+      "x-scheme-handler/https" = "firefox.desktop";
+    };
+  };
+
+  environment.systemPackages = with pkgs; [
+    codex
+    ghostty
+    gnomeExtensions.kimpanel
+    wget
+  ];
 
   users.users.${username} = {
     isNormalUser = true;
