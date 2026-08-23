@@ -1,11 +1,16 @@
 {
-  description = "laraos MacBook Pro";
+  description = "Multi-host nix-darwin and NixOS configuration";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
 
     nix-darwin = {
       url = "github:nix-darwin/nix-darwin/master";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    home-manager = {
+      url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -27,87 +32,31 @@
       self,
       nixpkgs,
       nix-darwin,
-      nix-homebrew,
-      homebrew-core,
-      homebrew-cask,
       ...
     }:
     let
       username = "larao";
-      hostname = "laraos-MacBook-Pro";
-
-      configuration =
-        { pkgs, ... }:
-        {
-          environment.systemPackages = with pkgs; [
-            neovim
-          ];
-
-          nix.settings.experimental-features = [
-            "nix-command"
-            "flakes"
-          ];
-
-	  system.defaults.dock = {
-	    show-recents = false;
-
-	    persistent-apps = [
-	      { app = "/Applications/Google Chrome.app"; }
-	      { app = "/Applications/Ghostty.app"; }
-	    ];
-	  };
-
-          system.primaryUser = username;
-          system.configurationRevision = self.rev or self.dirtyRev or null;
-          system.stateVersion = 6;
-          nixpkgs.hostPlatform = "aarch64-darwin";
-        };
+      specialArgs = { inherit inputs self username; };
     in
     {
-      darwinConfigurations.${hostname} = nix-darwin.lib.darwinSystem {
-        modules = [
-          configuration
+      # Add another Mac by copying a directory under hosts/darwin and adding
+      # one darwinSystem entry here.
+      darwinConfigurations."laraos-MacBook-Pro" = nix-darwin.lib.darwinSystem {
+        inherit specialArgs;
+        modules = [ ./hosts/darwin/laraos-macbook-pro ];
+      };
 
-          nix-homebrew.darwinModules.nix-homebrew
+      # This is an installable template. Replace its hardware configuration
+      # and hostname when adding the first physical NixOS machine.
+      nixosConfigurations.nixos-example = nixpkgs.lib.nixosSystem {
+        inherit specialArgs;
+        system = "x86_64-linux";
+        modules = [ ./hosts/nixos/nixos-example ];
+      };
 
-          {
-            nix-homebrew = {
-              enable = true;
-              user = username;
-
-              taps = {
-                "homebrew/homebrew-core" = homebrew-core;
-                "homebrew/homebrew-cask" = homebrew-cask;
-              };
-
-              mutableTaps = false;
-            };
-          }
-
-          ({ config, pkgs, ... }: {
-            environment.systemPackages = with pkgs; [
-              neovim
-	      codex
-            ];
-
-            homebrew = {
-              enable = true;
-              taps = builtins.attrNames config.nix-homebrew.taps;
-
-              brews = [];
-
-              casks = [
-                "google-chrome"
-		"ghostty"
-              ];
-
-              onActivation = {
-                autoUpdate = false;
-                upgrade = false;
-              };
-            };
-          })
-        ];
+      formatter = {
+        aarch64-darwin = nixpkgs.legacyPackages.aarch64-darwin.nixfmt-tree;
+        x86_64-linux = nixpkgs.legacyPackages.x86_64-linux.nixfmt-tree;
       };
     };
 }
