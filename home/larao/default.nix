@@ -5,9 +5,11 @@
 }:
 {
   imports = [
+    ./programs/desktoppr.nix
     ./programs/gh.nix
     ./programs/ghostty.nix
     ./programs/git.nix
+    ./programs/lazygit.nix
     ./programs/neovim.nix
     ./programs/yazi.nix
     ./programs/zsh.nix

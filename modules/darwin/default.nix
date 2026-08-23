@@ -51,6 +51,8 @@
   };
 
   system.defaults = {
+    ".GlobalPreferences"."com.apple.mouse.scaling" = 3.0;
+
     dock = {
       show-recents = false;
       persistent-apps = [
@@ -60,13 +62,6 @@
         { app = "/Applications/Spotify.app"; }
         { app = "/Applications/1Password.app"; }
       ];
-    };
-
-    CustomUserPreferences."com.apple.symbolichotkeys".AppleSymbolicHotKeys = {
-      # Free Command-Space from Input Sources and Spotlight so Raycast can use it.
-      "60".enabled = false;
-      "64".enabled = false;
-      "65".enabled = false;
     };
   };
 
