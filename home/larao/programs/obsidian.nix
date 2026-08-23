@@ -11,7 +11,7 @@
 
     vaults.notes.target = "Documents/Obsidian";
 
-    defaultSettings.appearance.theme = "moon";
+    defaultSettings.appearance.theme = "obsidian";
     defaultSettings.themes = [
       inputs.obsidian-extensions.legacyPackages.${pkgs.stdenv.hostPlatform.system}.obsidianThemes.tokyo-night
     ];
