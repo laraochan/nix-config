@@ -10,12 +10,17 @@
       javascript
       json
       lua
+      markdown
+      markdown_inline
+      nix
       rust
       toml
       tsx
       typescript
     ];
   };
+
+  plugins.treesitter-context.enable = true;
 
   # Keep the per-language indentation behavior from the previous Lua config.
   extraConfigLua = ''

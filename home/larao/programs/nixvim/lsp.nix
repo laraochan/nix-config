@@ -4,6 +4,7 @@
 
   lsp.servers = {
     gopls.enable = true;
+    nil_ls.enable = true;
     rust_analyzer.enable = true;
     ts_ls.enable = true;
     lua_ls = {
@@ -44,16 +45,34 @@
     };
   };
 
-  # Preserve Neovim native completion from the previous configuration.
   extraConfigLua = ''
+    vim.diagnostic.config({
+      severity_sort = true,
+      float = { border = "rounded", source = "if_many" },
+      underline = { severity = vim.diagnostic.severity.ERROR },
+      signs = true,
+      virtual_text = { spacing = 2, source = "if_many" },
+    })
+
     vim.api.nvim_create_autocmd("LspAttach", {
       callback = function(args)
-        local client = vim.lsp.get_client_by_id(args.data.client_id)
-        if client and client:supports_method("textDocument/completion") then
-          vim.lsp.completion.enable(true, client.id, args.buf, {
-            autotrigger = true,
+        local map = function(keys, action, description)
+          vim.keymap.set("n", keys, action, {
+            buffer = args.buf,
+            desc = "LSP: " .. description,
           })
         end
+
+        map("gd", vim.lsp.buf.definition, "Go to definition")
+        map("gD", vim.lsp.buf.declaration, "Go to declaration")
+        map("gr", vim.lsp.buf.references, "List references")
+        map("gI", vim.lsp.buf.implementation, "Go to implementation")
+        map("K", vim.lsp.buf.hover, "Hover documentation")
+        map("<leader>rn", vim.lsp.buf.rename, "Rename symbol")
+        map("<leader>ca", vim.lsp.buf.code_action, "Code action")
+        map("<leader>ld", vim.diagnostic.open_float, "Line diagnostics")
+        map("[d", function() vim.diagnostic.jump({ count = -1 }) end, "Previous diagnostic")
+        map("]d", function() vim.diagnostic.jump({ count = 1 }) end, "Next diagnostic")
       end,
     })
   '';
