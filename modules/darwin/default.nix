@@ -43,6 +43,8 @@
       "google-chrome"
       "raycast"
       "spotify"
+      "1password"
+      "nani"
     ];
     onActivation = {
       autoUpdate = false;
@@ -58,6 +60,7 @@
         { app = "/Applications/Ghostty.app"; }
         { app = "/Applications/Discord.app"; }
         { app = "/Applications/Spotify.app"; }
+        { app = "/Applications/1Password.app"; }
       ];
     };
 

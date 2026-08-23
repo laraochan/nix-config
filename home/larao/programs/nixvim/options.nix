@@ -1,0 +1,4 @@
+{ ... }:
+{
+  opts.number = true;
+}

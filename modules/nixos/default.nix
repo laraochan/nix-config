@@ -1,4 +1,9 @@
-{ inputs, username, ... }:
+{
+  inputs,
+  pkgs,
+  username,
+  ...
+}:
 {
   imports = [
     ../common
@@ -12,6 +17,8 @@
   };
 
   networking.networkmanager.enable = true;
+
+  environment.systemPackages = with pkgs; [ ];
 
   users.users.${username} = {
     isNormalUser = true;

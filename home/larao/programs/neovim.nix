@@ -1,5 +1,11 @@
-{ ... }:
+{ inputs, ... }:
 {
-  # Neovim is installed by modules/common. Add generated Neovim configuration
-  # here with xdg.configFile when it is needed.
+  imports = [ inputs.nixvim.homeModules.nixvim ];
+
+  # Nixvim is the explicit exception to the config-only Home Manager policy.
+  # It owns Neovim, its plugins, and their configuration as one user environment.
+  programs.nixvim = {
+    enable = true;
+    imports = [ ./nixvim ];
+  };
 }
