@@ -42,6 +42,7 @@
       sleep-inactive-battery-type = "nothing";
     };
     "org/gnome/shell".enabled-extensions = [
+      pkgs.gnomeExtensions.appindicator.extensionUuid
       pkgs.gnomeExtensions.kimpanel.extensionUuid
     ];
   };

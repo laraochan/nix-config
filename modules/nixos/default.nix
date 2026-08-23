@@ -108,6 +108,7 @@
     obsidian
     spotify
 
+    gnomeExtensions.appindicator
     gnomeExtensions.kimpanel
   ];
 
