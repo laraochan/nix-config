@@ -1,6 +1,7 @@
 {
   config,
   inputs,
+  lib,
   username,
   ...
 }:
@@ -30,6 +31,8 @@
 
   # Home Manager reads this value from the nix-darwin user definition.
   users.users.${username}.home = "/Users/${username}";
+
+  nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [ "1password-cli" ];
 
   homebrew = {
     enable = true;

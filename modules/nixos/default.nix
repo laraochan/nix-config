@@ -1,5 +1,6 @@
 {
   inputs,
+  lib,
   pkgs,
   username,
   ...
@@ -18,6 +19,17 @@
   };
 
   networking.networkmanager.enable = true;
+
+  nixpkgs.config.allowUnfreePredicate =
+    pkg:
+    builtins.elem (lib.getName pkg) [
+      "1password"
+      "1password-cli"
+      "discord"
+      "discord-unwrapped"
+      "obsidian"
+      "spotify"
+    ];
 
   time.timeZone = "Asia/Tokyo";
 
@@ -81,40 +93,22 @@
   security.rtkit.enable = true;
 
   programs = {
-    dconf = {
+    _1password.enable = true;
+    _1password-gui = {
       enable = true;
-      profiles.user.databases = [
-        {
-          lockAll = true;
-          settings = {
-            "org/gnome/desktop/input-sources".xkb-options = [ "ctrl:nocaps" ];
-            "org/gnome/settings-daemon/plugins/power" = {
-              sleep-inactive-ac-type = "nothing";
-              sleep-inactive-battery-type = "nothing";
-            };
-            "org/gnome/shell".enabled-extensions = [
-              pkgs.gnomeExtensions.kimpanel.extensionUuid
-            ];
-          };
-        }
-      ];
+      polkitPolicyOwners = [ username ];
     };
+    dconf.enable = true;
     firefox.enable = true;
   };
 
-  xdg.mime = {
-    enable = true;
-    defaultApplications = {
-      "text/html" = "firefox.desktop";
-      "x-scheme-handler/http" = "firefox.desktop";
-      "x-scheme-handler/https" = "firefox.desktop";
-    };
-  };
-
   environment.systemPackages = with pkgs; [
+    discord
     ghostty
+    obsidian
+    spotify
+
     gnomeExtensions.kimpanel
-    wget
   ];
 
   users.users.${username} = {

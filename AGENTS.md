@@ -64,6 +64,11 @@ hostnameの小文字表記と一致させる。
 CLIとその設定はHome Managerが所有し、可能なら `programs.<name>` moduleで本体と設定を
 まとめて管理する。
 
+設定手段や画面ではなく、状態の所有者で配置を決める。OSが機能を提供するための基盤、
+実行ファイル、権限、サービスはOS構成が所有する。その機能をlaraoがどう使うかという選択や、
+ユーザーのホームディレクトリまたはユーザー単位の設定データベースに保存される値は `home` が
+所有する。OS構成が提供し、Home Managerが利用方法を選ぶという分担を依存方向とする。
+
 ### 配置を決める順序
 
 1. laraoだけが使うCLIやユーザー設定なら `home` に置く。
@@ -86,6 +91,7 @@ Home Managerを設定生成だけに制限せず、ユーザー環境と不可�
 | Mac用GUIアプリ | `modules/darwin` のHomebrew cask |
 | NixOS用GUIアプリ | `modules/nixos` または対象の `hosts` |
 | GUIアプリのユーザー設定 | `home` |
+| polkit、ブラウザ連携などシステム統合が必要なアプリ | `modules` または `hosts` のOS構成 |
 
 ### 所有者を決める基準
 
@@ -123,6 +129,23 @@ programs.starship = {
 
 一方、zsh本体はログインシェルとしてOS構成でも有効にし、補完、履歴、aliasなどの
 ユーザー設定は `programs.zsh` で管理する。この重複を他のCLIへ一般化しない。
+
+1つのmoduleが実行ファイルだけでなく、権限、サービス、OS統合を一体で提供する場合は、
+機能全体をOS構成に所有させる。ユーザー用CLIとして独立しており、システム権限やサービスを
+必要としない部分だけをHome Managerへ委譲する。導入手段を揃えるために、不可分な機能を
+複数の所有者へ分解しない。
+
+### 非自由パッケージ
+
+非自由パッケージは `nixpkgs.config.allowUnfree = true` で一括許可せず、原則として
+`allowUnfreePredicate` で実際に導入するパッケージだけを許可する。この設定はパッケージの
+ユーザー設定ではなくnixpkgsの評価ポリシーなので、`home` ではなく、そのnixpkgsを提供する
+`modules/darwin` または `modules/nixos` に置く。
+
+この構成では `home-manager.useGlobalPkgs = true` のため、Home Managerから導入する非自由
+パッケージもOS構成のpredicateで許可する。ラッパーと内部成果物の両方が評価対象になる場合は、
+評価に必要な名前を過不足なく許可する。許可リストを `modules/common` に集約して、不要なOSまで
+許可範囲を広げない。
 
 ### ファイルの分割
 
@@ -163,7 +186,16 @@ programs.ghostty = {
 ```
 
 `home` はDarwinとNixOSで共有される。OS固有のアプリ設定は
-`lib.mkIf pkgs.stdenv.hostPlatform.isDarwin` などで対象OSを限定する。
+`lib.mkIf pkgs.stdenv.hostPlatform.isDarwin` や
+`lib.mkIf pkgs.stdenv.hostPlatform.isLinux` で対象OSを限定する。設定attrset全体には
+`lib.mkIf`、パッケージリストの要素には `lib.optionals` を使う。共通設定には不要な条件を
+付けず、対象OSでoptionやパッケージが存在しない場合、または生成物がOS固有の場合に限る。
+
+デスクトップ環境では、機能を利用可能にするシステム基盤と、ユーザーが選ぶ状態を分離する。
+設定値がユーザー単位で保存され、ユーザー設定がシステム既定値より優先される仕組みでは、
+OS構成に既定値を書いてlaraoの状態を間接的に制御しない。Home Managerからユーザー単位の
+設定を直接生成する。全ユーザーへ同じ値を強制する要件がある場合だけ、OS構成のポリシーとして
+管理する。
 
 Home Managerはシステム構成に統合されているため、個別に
 `home-manager switch` を実行しない。
