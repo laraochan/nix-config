@@ -27,8 +27,8 @@ hosts/
 - そのマシンだけに必要なパッケージやmacOS defaults
 
 複数のマシンで共有したい設定は `hosts` ではなく `modules` に置きます。
-ユーザー個人のシェル、Git、dotfiles、ユーザー用パッケージは `home/larao` に
-置きます。
+ユーザー個人のシェル、Git、dotfilesの設定は `home/larao` に置きます。
+パッケージの配置はルートの `AGENTS.md` に従います。
 
 ## Darwinホスト
 

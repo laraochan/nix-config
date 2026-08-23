@@ -5,17 +5,74 @@
 
 ## アーキテクチャ
 
-このリポジトリは、設定の適用範囲によってディレクトリを分ける。
+このリポジトリは、設定の適用範囲と所有者によって責務を分ける。判断するときは
+「どのマシンに適用するか」と「システムとユーザーのどちらが所有するか」を基準にする。
 
-- `flake.nix`: inputs、ホストと構成の関連付け、対象アーキテクチャを定義する。
-- `modules/common`: macOSとNixOSの全ホストに共通するシステム設定を置く。
-- `modules/darwin`: 全Macに共通するパッケージ、Homebrew、macOS設定を置く。
-- `modules/nixos`: 全NixOSホストに共通するパッケージとサービスを置く。
-- `hosts/<os>/<hostname>`: ホスト名、CPU、ブート、ハードウェアなど1台固有の設定を置く。
-- `home/larao`: Home Managerで生成するlaraoユーザーの設定を置く。
+構成は次の方向に組み立てる。
 
-設定は、適用対象が最も狭く正確になる場所へ置く。複数ホストで共有する設定を
-`hosts` に複製せず、対応する `modules` へ移す。
+1. `flake.nix` が対象ホストを選び、`hosts/<os>/<hostname>` を読み込む。
+2. 各ホストが対応する `modules/darwin` または `modules/nixos` を読み込む。
+3. OS別moduleが `modules/common` とHome Managerを読み込む。
+4. Home Managerが `home/larao` からユーザー設定を生成する。
+
+依存方向を逆にしない。共通moduleから特定ホストを参照したり、Home Managerから
+システムmoduleを読み込んだりしない。
+
+### `flake.nix`
+
+flake inputs、ホストと構成の関連付け、対象アーキテクチャ、formatterを定義する。
+パッケージ、サービス、dotfilesの具体的な設定は置かない。構成名は原則として
+対象マシンの `networking.hostName` と一致させ、`--flake .` で現在のホストを
+自動選択できるようにする。
+
+### `hosts`
+
+`hosts/<os>/<hostname>` は1台のマシン固有の入口である。ディレクトリ名は原則として
+hostnameの小文字表記と一致させる。
+
+ここには次の設定を置く。
+
+- `networking.hostName` とホストのアーキテクチャ
+- ブートローダー、ディスク、ファイルシステム、CPU、GPU
+- `hardware-configuration.nix`
+- その1台だけで必要なサービス、パッケージ、OS設定
+- 対応するOS共通moduleのimport
+
+複数ホストで同じ設定が必要になった場合は、`hosts` に複製せず対応する
+`modules` へ移す。ユーザーのシェルやアプリ設定も置かない。
+
+### `modules`
+
+`modules` はOS構成が所有する共有設定を置く。パッケージのインストール、サービス、
+ユーザーアカウント、OS defaultsなど、管理者権限で適用する設定を担当する。
+
+- `modules/common`: macOSとNixOSの全ホストで共有するNix設定とCLIパッケージ
+- `modules/darwin`: 全Macで共有するNixパッケージ、Homebrew、macOS defaults、
+  nix-darwinへのHome Manager統合
+- `modules/nixos`: 全NixOSホストで共有するパッケージ、サービス、ユーザー、locale、
+  NixOSへのHome Manager統合
+
+特定ホストのhardware設定やhostnameは置かない。ユーザー設定ファイルの内容も
+`modules` に直接記述せず、Home Managerへ委譲する。
+
+### `home/larao`
+
+`home/larao` はlaraoユーザーとして生成する設定ファイルとユーザー環境を担当する。
+シェル、Git、エディタ、ターミナルなどの設定を置き、DarwinとNixOSで共有する。
+
+OSパッケージ、システムサービス、ユーザーアカウント、hardware設定は置かない。
+パッケージの導入元を一意に保つため、原則としてHome Managerからパッケージを
+インストールしない。例外は後述するNixvimだけとする。
+
+### 配置を決める順序
+
+1. ユーザー設定ファイルなら `home/larao` に置く。
+2. システム設定で1台だけに適用するなら `hosts` に置く。
+3. 同じOSの全ホストで共有するなら `modules/darwin` または `modules/nixos` に置く。
+4. 両OSで共有するなら `modules/common` に置く。
+
+設定は、実際の適用対象が最も狭く正確になる場所へ置く。将来共有するかもしれない
+という理由だけで、ホスト固有の設定を先に共通化しない。
 
 ## パッケージ管理
 
@@ -87,6 +144,26 @@ programs.ghostty = {
 
 `home/larao` はDarwinとNixOSで共有される。OS固有のアプリ設定は
 `lib.mkIf pkgs.stdenv.hostPlatform.isDarwin` などで対象OSを限定する。
+
+Home Managerはシステム構成に統合されているため、個別に
+`home-manager switch` を実行しない。
+
+## 設定の適用
+
+macOSへ適用する場合:
+
+```sh
+sudo darwin-rebuild switch --flake .
+```
+
+ThinkPadのNixOSへ適用する場合:
+
+```sh
+sudo nixos-rebuild switch --flake .
+```
+
+hostname変更前の初回適用や、現在とは別のホスト構成を対象にする場合だけ、
+`--flake .#<hostname>` と構成名を明示する。
 
 ## ホストの追加
 
