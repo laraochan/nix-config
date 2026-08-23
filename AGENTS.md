@@ -43,10 +43,10 @@ hostnameの小文字表記と一致させる。
 
 ### `modules`
 
-`modules` はOS構成が所有する共有設定を置く。パッケージのインストール、サービス、
-ユーザーアカウント、OS defaultsなど、管理者権限で適用する設定を担当する。
+`modules` はOS構成が所有する共有設定を置く。サービス、ログインシェル、
+ユーザーアカウント、OS defaultsなど、ログイン前またはシステム全体で必要な設定を担当する。
 
-- `modules/common`: macOSとNixOSの全ホストで共有するNix設定とCLIパッケージ
+- `modules/common`: macOSとNixOSの全ホストで共有するNix設定、システム機能、フォント
 - `modules/darwin`: 全Macで共有するNixパッケージ、Homebrew、macOS defaults、
   nix-darwinへのHome Manager統合
 - `modules/nixos`: 全NixOSホストで共有するパッケージ、サービス、ユーザー、locale、
@@ -60,13 +60,13 @@ hostnameの小文字表記と一致させる。
 `home/larao` はlaraoユーザーとして生成する設定ファイルとユーザー環境を担当する。
 シェル、Git、エディタ、ターミナルなどの設定を置き、DarwinとNixOSで共有する。
 
-OSパッケージ、システムサービス、ユーザーアカウント、hardware設定は置かない。
-パッケージの導入元を一意に保つため、原則としてHome Managerからパッケージを
-インストールしない。例外は後述するNixvimだけとする。
+システムサービス、ユーザーアカウント、hardware設定は置かない。laraoだけが使う
+CLIとその設定はHome Managerが所有し、可能なら `programs.<name>` moduleで本体と設定を
+まとめて管理する。
 
 ### 配置を決める順序
 
-1. ユーザー設定ファイルなら `home/larao` に置く。
+1. laraoだけが使うCLIやユーザー設定なら `home/larao` に置く。
 2. システム設定で1台だけに適用するなら `hosts` に置く。
 3. 同じOSの全ホストで共有するなら `modules/darwin` または `modules/nixos` に置く。
 4. 両OSで共有するなら `modules/common` に置く。
@@ -76,61 +76,81 @@ OSパッケージ、システムサービス、ユーザーアカウント、har
 
 ## パッケージ管理
 
-パッケージのインストールはHome Managerではなく、OS構成を構成するNix moduleで完結させる。
-複数ホストで共有するものは `modules`、1台だけで使うものは `hosts` に置く。
+パッケージは適用範囲だけでなく、誰が所有する機能かによって導入元を決める。
+Home Managerを設定生成だけに制限せず、ユーザー環境と不可分なCLIの導入も担当させる。
 
 | 対象 | 配置場所 |
 | --- | --- |
-| macOSとNixOSで共通のCLI | `modules/common` の `environment.systemPackages` |
-| Mac専用のNixパッケージ | `modules/darwin` の `environment.systemPackages` |
-| NixOS専用のパッケージ | `modules/nixos` の `environment.systemPackages` |
-| Mac用GUIアプリやHomebrewパッケージ | `modules/darwin` の `homebrew` |
+| サービス、ログイン、全ユーザーに必要 | `modules` または `hosts` のOS構成 |
+| laraoだけが使うCLI | `home/larao` のHome Manager構成 |
+| Mac用GUIアプリ | `modules/darwin` のHomebrew cask |
+| NixOS用GUIアプリ | `modules/nixos` または対象の `hosts` |
+| GUIアプリのユーザー設定 | `home/larao` |
 
-### 現在のファイル運用
+### 所有者を決める基準
 
-現時点ではパッケージ、サービス、ユーザーごとにファイルを細分化しない。
-設定は各OSの `default.nix` に直接記述し、役割が大きくなった時点で分割する。
+次の順序で判断する。
 
-- 共通パッケージは `modules/common/default.nix` の `environment.systemPackages` に置く。
-- NixOS共通パッケージは `modules/nixos/default.nix` の `environment.systemPackages` に置く。
-- NixOSのサービスは同じファイルで `services.<name>.enable` などを使い、サービスが導入するパッケージを重複して追加しない。
-- laraoだけに限定する必要があるNixOSパッケージは `users.users.${username}.packages` に置く。
-- 特定ホストだけのパッケージは `hosts/nixos/<hostname>/default.nix` に置く。
+1. OSの起動、ログイン、サービス提供に必要ならOS構成に置く。
+2. 複数ユーザーが利用するシステム管理用ツールならOS構成に置く。
+3. laraoの対話環境や設定と不可分なCLIならHome Managerに置く。
+4. GUI本体はDarwinではHomebrew、NixOSではOS構成に置き、設定だけHome Managerに置く。
+
+同じパッケージをOS構成とHome Managerの両方から導入するのは原則として避ける。
+ログインシェルのzshのように、OSへの登録とユーザー設定の両方で必要な場合だけ許可する。
+この構成では `home-manager.useGlobalPkgs = true` のため、両者は同じnixpkgsの成果物を
+参照する。
+
+### Home Managerでのパッケージ導入
+
+ユーザー用CLIにHome Manager moduleがある場合は、`programs.<name>.enable = true` を使い、
+パッケージ、設定、シェル統合を同じmoduleに所有させる。moduleがない場合に限り
+`home.packages` を使う。
+
+たとえばfzfとStarshipはHome Managerが所有する。
+
+```nix
+programs.fzf = {
+  enable = true;
+  enableZshIntegration = true;
+};
+
+programs.starship = {
+  enable = true;
+  enableZshIntegration = true;
+};
+```
+
+一方、zsh本体はログインシェルとしてOS構成でも有効にし、補完、履歴、aliasなどの
+ユーザー設定は `programs.zsh` で管理する。この重複を他のCLIへ一般化しない。
+
+### ファイルの分割
+
+現時点ではOS moduleをパッケージ、サービス、ユーザーごとに細分化しない。
+設定は各OSの `default.nix` に直接記述し、読みにくくなった時点で分割する。
 
 `default.nix` が読みにくくなった場合に限り、`packages.nix`、`services.nix`、
 `users/<name>.nix` など責務単位で分割し、`default.nix` からimportする。
 将来の可能性だけを理由に空ファイルや細かいディレクトリを先に作らない。
 
-macOSのGUIアプリは、原則としてHomebrew caskで管理する。`home.packages` は
-使用しない。Home Manager側からパッケージを追加する変更も行わない。
+macOSのGUIアプリは原則としてHomebrew caskで管理する。Homebrew版アプリを
+Home Manager moduleで設定する場合は、対応していれば `package = null` を指定する。
 
 ### この方針の理由
 
-この構成ではnix-darwin、NixOS、nix-homebrewを併用する。Home Managerにも
-パッケージ管理を持たせると、インストール元、更新方法、重複の有無を判断しにくい。
-そのため、パッケージとシステム設定は `modules`、ユーザー設定の生成はHome Manager
-という境界を維持する。
-
-この判断はnix-darwinとHomebrewを併用する現在の構成を前提とする。
-nix-darwinを廃止する場合は、Home Managerによるパッケージ管理を含めて
-責務分担を再検討する。
+パッケージをすべてOS構成へ集約すると、Home Managerのmoduleが提供する設定生成、
+シェル統合、関連ファイルの一貫した管理を利用できない。一方、すべてをHome Managerへ
+移すと、サービスやログインなどOSが所有すべき機能との境界が崩れる。そのため、導入手段
+ではなく機能の所有者を基準に分ける。
 
 ## Home Manager
 
-Home Managerはユーザー設定と設定ファイルの生成だけを担当する。
+Home Managerはlaraoのユーザー環境を担当し、ユーザー用CLI、その設定ファイル、
+シェル統合を一体として管理する。Nixvimもこの原則に従ってHome Managerが所有する。
 
-### Nixvimの例外
-
-NixvimはNeovim本体、プラグイン、LSP、設定を不可分なユーザー環境として
-生成するため、Home Managerによるパッケージ導入を許可する明示的な例外とする。
-通常版Neovimを `modules` 側へ重複して追加しない。Nixvim以外にはこの例外を
-拡張しない。
-
-- `programs.<name>.enable = true` 自体は禁止しない。
-- モジュールを有効にする前に、パッケージを暗黙に追加するか実装を確認する。
-- `package = null` でパッケージ導入を無効化できる場合は必ず指定する。
-- パッケージ導入を無効化できないモジュールは使用しない。
-- その場合は `home.file` または `xdg.configFile` で設定だけを生成する。
+OS構成またはHomebrewが本体を所有するGUIアプリは、Home Managerから重複導入しない。
+`package = null` を利用できない場合は、そのmoduleを使わず `home.file` または
+`xdg.configFile` で設定だけを生成する。
 
 たとえばHomebrew版Ghosttyは次のように設定する。
 

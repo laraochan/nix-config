@@ -1,4 +1,7 @@
 { ... }:
 {
-  colorschemes.rose-pine.enable = true;
+  colorschemes.tokyonight = {
+    enable = true;
+    settings.style = "night";
+  };
 }

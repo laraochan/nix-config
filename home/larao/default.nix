@@ -13,6 +13,12 @@
     ./programs/zsh.nix
   ];
 
+  home.packages = with pkgs; [
+    codex
+    fd
+    ripgrep
+  ];
+
   home = {
     inherit username;
     homeDirectory =

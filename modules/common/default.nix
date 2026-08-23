@@ -5,10 +5,7 @@
     "flakes"
   ];
 
-  environment.systemPackages = with pkgs; [
-    git
-    gh
-    ripgrep
-    yazi
-  ];
+  fonts.packages = [ pkgs.nerd-fonts.jetbrains-mono ];
+
+  programs.zsh.enable = true;
 }

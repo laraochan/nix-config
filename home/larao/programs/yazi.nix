@@ -1,5 +1,7 @@
 { ... }:
 {
-  # Yazi is installed by modules/common. Add generated Yazi configuration here
-  # with xdg.configFile when it is needed.
+  programs.yazi = {
+    enable = true;
+    enableZshIntegration = true;
+  };
 }

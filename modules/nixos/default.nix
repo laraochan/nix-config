@@ -12,6 +12,7 @@
 
   home-manager = {
     useGlobalPkgs = true;
+    backupFileExtension = "hm-backup";
     extraSpecialArgs = { inherit inputs username; };
     users.${username} = import ../../home/larao;
   };
@@ -107,7 +108,6 @@
   };
 
   environment.systemPackages = with pkgs; [
-    codex
     ghostty
     gnomeExtensions.kimpanel
     wget
@@ -117,6 +117,7 @@
     isNormalUser = true;
     description = username;
     home = "/home/${username}";
+    shell = pkgs.zsh;
     extraGroups = [
       "networkmanager"
       "wheel"

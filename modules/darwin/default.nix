@@ -1,7 +1,6 @@
 {
   config,
   inputs,
-  pkgs,
   username,
   ...
 }:
@@ -14,6 +13,7 @@
 
   home-manager = {
     useGlobalPkgs = true;
+    backupFileExtension = "hm-backup";
     extraSpecialArgs = { inherit inputs username; };
     users.${username} = import ../../home/larao;
   };
@@ -27,8 +27,6 @@
     };
     mutableTaps = false;
   };
-
-  environment.systemPackages = with pkgs; [ codex ];
 
   # Home Manager reads this value from the nix-darwin user definition.
   users.users.${username}.home = "/Users/${username}";
