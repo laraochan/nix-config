@@ -1,4 +1,10 @@
 { pkgs, username, ... }:
+let
+  wallpaper = builtins.path {
+    path = ../../assets/wallpaper.png;
+    name = "wallpaper.png";
+  };
+in
 {
   home = {
     homeDirectory = "/home/${username}";
@@ -6,6 +12,11 @@
   };
 
   dconf.settings = {
+    "org/gnome/desktop/background" = {
+      picture-uri = "file://${wallpaper}";
+      picture-uri-dark = "file://${wallpaper}";
+    };
+
     "org/gnome/desktop/input-sources".xkb-options = [ "ctrl:nocaps" ];
 
     "org/gnome/settings-daemon/plugins/power" = {
