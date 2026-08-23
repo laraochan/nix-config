@@ -88,6 +88,10 @@
           lockAll = true;
           settings = {
             "org/gnome/desktop/input-sources".xkb-options = [ "ctrl:nocaps" ];
+            "org/gnome/settings-daemon/plugins/power" = {
+              sleep-inactive-ac-type = "nothing";
+              sleep-inactive-battery-type = "nothing";
+            };
             "org/gnome/shell".enabled-extensions = [
               pkgs.gnomeExtensions.kimpanel.extensionUuid
             ];
