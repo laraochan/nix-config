@@ -42,7 +42,6 @@
     taps = builtins.attrNames config.nix-homebrew.taps;
     brews = [ ];
     casks = [
-      "discord"
       "ghostty"
       "google-chrome"
       "raycast"
@@ -50,6 +49,7 @@
       "1password"
       "nani"
       "obsidian"
+      "vesktop"
     ];
     onActivation = {
       autoUpdate = false;
@@ -66,7 +66,7 @@
         { app = "/Applications/Google Chrome.app"; }
         { app = "/Applications/Ghostty.app"; }
         { app = "/Applications/Obsidian.app"; }
-        { app = "/Applications/Discord.app"; }
+        { app = "/Applications/Vesktop.app"; }
         { app = "/Applications/Spotify.app"; }
         { app = "/Applications/1Password.app"; }
       ];

@@ -28,8 +28,6 @@
     builtins.elem (lib.getName pkg) [
       "1password"
       "1password-cli"
-      "discord"
-      "discord-unwrapped"
       "obsidian"
       "spotify"
     ];
@@ -106,12 +104,10 @@
   };
 
   environment.systemPackages = with pkgs; [
-    (discord.override {
-      commandLineArgs = "--ozone-platform=x11";
-    })
     ghostty
     obsidian
     spotify
+    vesktop
 
     gnomeExtensions.appindicator
     gnomeExtensions.kimpanel
