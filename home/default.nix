@@ -15,6 +15,7 @@ let
 in
 {
   imports = [
+    ./btop.nix
     ./gh.nix
     ./ghostty.nix
     ./git.nix
