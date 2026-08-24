@@ -106,7 +106,9 @@
   };
 
   environment.systemPackages = with pkgs; [
-    discord
+    (discord.override {
+      commandLineArgs = "--ozone-platform=x11";
+    })
     ghostty
     obsidian
     spotify
