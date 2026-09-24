@@ -1,0 +1,38 @@
+#+TITLE: Emacs Configuration
+#+STARTUP: fold
+
+* Header
+
+#+begin_src emacs-lisp :tangle yes
+;;; init.el --- My Emacs configuration -*- lexical-binding: t; -*-
+#+end_src
+
+* Basic
+
+#+begin_src emacs-lisp :tangle yes
+(setq inhibit-startup-message t)
+(setq ring-bell-function #'ignore)
+#+end_src
+
+* UI
+
+#+begin_src emacs-lisp :tangle yes
+(menu-bar-mode -1)
+(tool-bar-mode -1)
+
+(when (fboundp 'scroll-bar-mode)
+(scroll-bar-mode -1))
+#+end_src
+
+* Panda Theme
+
+#+begin_src emacs-lisp :tangle yes
+(require 'panda-theme)
+(enable-theme 'panda)
+#+end_src
+
+* Footer
+
+#+begin_src emacs-lisp :tangle yes
+;;; init.el ends here
+#+end_src

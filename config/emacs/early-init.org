@@ -1,0 +1,26 @@
+#+TITLE: Emacs Early Init
+
+* Header
+
+#+begin_src emacs-lisp :tangle yes
+;;; early-init.el --- Early initialization -*- lexical-binding: t; -*-
+#+end_src
+
+* Package
+
+#+begin_src emacs-lisp :tangle yes
+(setq package-enable-at-startup nil)
+#+end_src
+
+* UI
+
+#+begin_src emacs-lisp :tangle yes
+(setq frame-inhibit-implied-resize t)
+(setq inhibit-startup-screen t)
+#+end_src
+
+* Footer
+
+#+begin_src emacs-lisp :tangle yes
+;;; early-init.el ends here
+#+end_src

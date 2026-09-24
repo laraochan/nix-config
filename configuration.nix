@@ -39,9 +39,64 @@
     LC_TIME = "ja_JP.UTF-8";
   };
 
+  i18n.inputMethod = {
+    enable = true;
+    type = "fcitx5";
+
+    fcitx5 = {
+      waylandFrontend = true;
+
+      addons = with pkgs; [
+        fcitx5-mozc
+        fcitx5-gtk
+      ];
+
+      settings.inputMethod = {
+        GroupOrder."0" = "Default";
+
+        "Groups/0" = {
+          Name = "Default";
+          "Default Layout" = "us";
+          DefaultIM = "keyboard-us";
+        };
+
+        "Groups/0/Items/0" = {
+          Name = "keyboard-us";
+        };
+
+        "Groups/0/Items/1" = {
+          Name = "mozc";
+        };
+      };
+    };
+  };
+
   # Enable the GNOME Desktop Environment.
   services.displayManager.gdm.enable = true;
   services.desktopManager.gnome.enable = true;
+
+  programs.dconf = {
+    enable = true;
+
+    profiles.user.databases = [
+      {
+        lockAll = true;
+        settings = {
+          "org/gnome/shell" = {
+            enabled-extensions = [
+              pkgs.gnomeExtensions.kimpanel.extensionUuid
+            ];
+          };
+
+          "org/gnome/desktop/input-sources" = {
+            xkb-options = [
+              "ctrl:nocaps"
+            ];
+          };
+        };
+      }
+    ];
+  };
 
   # Configure keymap in X11
   services.xserver.xkb = {
@@ -86,8 +141,11 @@
   # List packages installed in system profile.
   # You can use https://search.nixos.org/ to find more packages (and options).
   environment.systemPackages = with pkgs; [
+    vim
     git
     gh
+
+    gnomeExtensions.kimpanel
   ];
 
   # Some programs need SUID wrappers, can be configured further or are

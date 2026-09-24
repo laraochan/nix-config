@@ -1,5 +1,25 @@
 {
   "nodes": {
+    "home-manager": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1790225410,
+        "narHash": "sha256-BOyZoliWfm/beS4m3FxFKlu5at6npZen1PsWtvzzihk=",
+        "owner": "nix-community",
+        "repo": "home-manager",
+        "rev": "4900baf1e219645e4a2acba35723852b2091bc20",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-community",
+        "repo": "home-manager",
+        "type": "github"
+      }
+    },
     "nixpkgs": {
       "locked": {
         "lastModified": 1790149054,
@@ -16,9 +36,26 @@
         "type": "github"
       }
     },
+    "org-babel": {
+      "locked": {
+        "lastModified": 1781216126,
+        "narHash": "sha256-f1OICjF3pdRb89ackr20ulKJeTfGnQKXns2mgxOxE00=",
+        "owner": "emacs-twist",
+        "repo": "org-babel",
+        "rev": "e39a14ee977472e15c1c3019b7e00c0da9ecbaa2",
+        "type": "github"
+      },
+      "original": {
+        "owner": "emacs-twist",
+        "repo": "org-babel",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
-        "nixpkgs": "nixpkgs"
+        "home-manager": "home-manager",
+        "nixpkgs": "nixpkgs",
+        "org-babel": "org-babel"
       }
     }
   },
