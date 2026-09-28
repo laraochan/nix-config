@@ -1,24 +1,41 @@
 { self, pkgs, ... }:
+
 {
-  # List packages installed in system profile. To search by name, run:
-  # $ nix-env -qaP | grep wget
-  environment.systemPackages =
-    [ pkgs.vim
+  nix.enable = false;
+
+  system = {
+    configurationRevision =
+      self.rev or self.dirtyRev or null;
+
+    stateVersion = 6;
+
+    primaryUser = "larao";
+  };
+
+  nixpkgs = {
+    hostPlatform = "aarch64-darwin";
+    config.allowUnfree = true;
+  };
+
+  users.users.larao = {
+    name = "larao";
+    home = "/Users/larao";
+  };
+
+  environment.systemPackages = with pkgs; [
+    git
+  ];
+
+  homebrew = {
+    enable = true;
+
+    # Also enables Homebrew's zsh initialization.
+    enableZshIntegration = false;
+
+    casks = [
+      "google-chrome"
+      "discord"
+      "spotify"
     ];
-
-  # Necessary for using flakes on this system.
-  nix.settings.experimental-features = "nix-command flakes";
-
-  # Enable alternative shell support in nix-darwin.
-  # programs.fish.enable = true;
-
-  # Set Git commit hash for darwin-version.
-  system.configurationRevision = self.rev or self.dirtyRev or null;
-
-  # Used for backwards compatibility, please read the changelog before changing.
-  # $ darwin-rebuild changelog
-  system.stateVersion = 6;
-
-  # The platform the configuration will be used on.
-  nixpkgs.hostPlatform = "aarch64-darwin";
+  };
 }
